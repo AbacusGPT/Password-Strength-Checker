@@ -2,10 +2,8 @@ name: Release
 
 on:
   push:
-    branches:
-      - main
-
-permissions: write-all
+    tags:
+      - '*.*.*' # Match all tags with the format major.minor.patch
 
 jobs:
   release:
@@ -20,77 +18,91 @@ jobs:
       with:
         go-version: 1.17
 
+    - name: Extract tag information
+      id: extract_tag
+      run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
     - name: Build
       run: |
-        go build -o release_folder/psc
-        GOOS=windows GOARCH=amd64 go build -o release_folder/psc.exe
-        GOOS=darwin GOARCH=amd64 go build -o release_folder/psc_mac
-        GOOS=linux GOARCH=amd64 go build -o release_folder/psc_linux
-        GOOS=linux GOARCH=arm64 go build -o release_folder/psc_linux_arm64
+        go build -o release_folder/psc-${{ steps.extract_tag.outputs.TAG_NAME }}
+        GOOS=windows GOARCH=amd64 go build -o release_folder/psc-${{ steps.extract_tag.outputs.TAG_NAME }}-windows-amd64.exe
+        GOOS=darwin GOARCH=amd64 go build -o release_folder/psc-${{ steps.extract_tag.outputs.TAG_NAME }}-darwin-amd64
+        GOOS=darwin GOARCH=arm64 go build -o release_folder/psc-${{ steps.extract_tag.outputs.TAG_NAME }}-darwin-arm64
+        GOOS=linux GOARCH=amd64 go build -o release_folder/psc-${{ steps.extract_tag.outputs.TAG_NAME }}-linux-amd64
+        GOOS=linux GOARCH=arm64 go build -o release_folder/psc-${{ steps.extract_tag.outputs.TAG_NAME }}-linux-arm64
 
     - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
       id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: v${{ github.run_number }}
-        release_name: Release ${{ github.run_number }}
+        tag_name: ${{ steps.extract_tag.outputs.TAG_NAME }}
+        release_name: Release ${{ steps.extract_tag.outputs.TAG_NAME }}
         draft: false
         prerelease: false
 
-    - name: Upload Release Assets
-      id: upload-release-asset
+    - name: Create tar.gz archive
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        tar -czf release_folder/psc-${{ steps.extract_tag.outputs.TAG_NAME }}-darwin-amd64.tar.gz -C release_folder/ psc_mac
+        tar -czf release_folder/psc-${{ steps.extract_tag.outputs.TAG_NAME }}-darwin-arm64.tar.gz -C release_folder/ psc_mac_arm64
+        tar -czf release_folder/psc-${{ steps.extract_tag.outputs.TAG_NAME }}-linux-amd64.tar.gz -C release_folder/ psc_linux
+        tar -czf release_folder/psc-${{ steps.extract_tag.outputs.TAG_NAME }}-linux-arm64.tar.gz -C release_folder/ psc_linux_arm64
+        tar -czf release_folder/psc-${{ steps.extract_tag.outputs.TAG_NAME }}-windows-amd64.tar.gz -C release_folder/ psc.exe
+
+    - name: Upload Release Assets (MacOS amd64)
+      if: startsWith(github.ref, 'refs/tags/')
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: release_folder/psc
-        asset_name: psc
-        asset_content_type: application/octet-stream
+        asset_path: release_folder/psc-${{ steps.extract_tag.outputs.TAG_NAME }}-darwin-amd64.tar.gz
+        asset_name: psc-${{ steps.extract_tag.outputs.TAG_NAME }}-darwin-amd64.tar.gz
+        asset_content_type: application/gzip
 
-    - name: Upload Windows Release Asset
-      id: upload-release-asset-windows
+    - name: Upload Release Assets (MacOS arm64)
+      if: startsWith(github.ref, 'refs/tags/')
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: release_folder/psc.exe
-        asset_name: psc.exe
-        asset_content_type: application/octet-stream
+        asset_path: release_folder/psc-${{ steps.extract_tag.outputs.TAG_NAME }}-darwin-arm64.tar.gz
+        asset_name: psc-${{ steps.extract_tag.outputs.TAG_NAME }}-darwin-arm64.tar.gz
+        asset_content_type: application/gzip
 
-    - name: Upload macOS Release Asset
-      id: upload-release-asset-mac
+    - name: Upload Release Assets (Linux amd64)
+      if: startsWith(github.ref, 'refs/tags/')
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: release_folder/psc_mac
-        asset_name: psc_mac
-        asset_content_type: application/octet-stream
+        asset_path: release_folder/psc-${{ steps.extract_tag.outputs.TAG_NAME }}-linux-amd64.tar.gz
+        asset_name: psc-${{ steps.extract_tag.outputs.TAG_NAME }}-linux-amd64.tar.gz
+        asset_content_type: application/gzip
 
-    - name: Upload Linux Release Asset (AMD64)
-      id: upload-release-asset-linux
+    - name: Upload Release Assets (Linux arm64)
+      if: startsWith(github.ref, 'refs/tags/')
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: release_folder/psc_linux
-        asset_name: psc_linux
-        asset_content_type: application/octet-stream
+        asset_path: release_folder/psc-${{ steps.extract_tag.outputs.TAG_NAME }}-linux-arm64.tar.gz
+        asset_name: psc-${{ steps.extract_tag.outputs.TAG_NAME }}-linux-arm64.tar.gz
+        asset_content_type: application/gzip
 
-    - name: Upload Linux Release Asset (ARM64)
-      id: upload-release-asset-linux-arm64
+    - name: Upload Release Assets (Windows amd64)
+      if: startsWith(github.ref, 'refs/tags/')
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: release_folder/psc_linux_arm64
-        asset_name: psc_linux_arm64
-        asset_content_type: application/octet-stream
-
+        asset_path: release_folder/psc-${{ steps.extract_tag.outputs.TAG_NAME }}-windows-amd64.tar.gz
+        asset_name: psc-${{ steps.extract_tag.outputs.TAG_NAME }}-windows-amd64.tar.gz
+        asset_content_type: application/gzip
