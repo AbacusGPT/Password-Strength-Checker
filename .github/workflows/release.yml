@@ -5,6 +5,8 @@ on:
     tags:
       - '*.*.*' # Match all tags with the format major.minor.patch
 
+permissions: write-all
+
 jobs:
   release:
     runs-on: ubuntu-latest
