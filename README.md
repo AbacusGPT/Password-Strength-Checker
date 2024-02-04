@@ -85,3 +85,30 @@ weak
 $ ./psc --password '62sWJFk28gVnXK3u'
 strong
 ```
+
+### run tests
+```
+$ go test
+Password 'Pass!234', Run 1: Result - strong
+Password 'Pass!234', Run 2: Result - weak
+Password 'Pass!234', Run 3: Result - weak
+Password 'Pass!234', Run 4: Result - weak
+Password 'Pass!234', Run 5: Result - weak
+Password 'Pass!234', Run 6: Result - strong
+Password 'Pass!234', Run 7: Result - strong
+Password 'Pass!234', Run 8: Result - weak
+Password 'Pass!234', Run 9: Result - weak
+Password 'Pass!234', Run 10: Result - weak
+Password '62sWJFk28gVnXK3u', Run 1: Result - strong
+Password '62sWJFk28gVnXK3u', Run 2: Result - weak
+Password '62sWJFk28gVnXK3u', Run 3: Result - strong
+Password '62sWJFk28gVnXK3u', Run 4: Result - strong
+Password '62sWJFk28gVnXK3u', Run 5: Result - strong
+Password '62sWJFk28gVnXK3u', Run 6: Result - strong
+Password '62sWJFk28gVnXK3u', Run 7: Result - strong
+Password '62sWJFk28gVnXK3u', Run 8: Result - strong
+Password '62sWJFk28gVnXK3u', Run 9: Result - strong
+Password '62sWJFk28gVnXK3u', Run 10: Result - strong
+PASS
+ok  	github.com/AbacusGPT/Password-Strength-Checker	13.619s
+```
