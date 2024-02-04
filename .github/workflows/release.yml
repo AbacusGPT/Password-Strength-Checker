@@ -28,6 +28,10 @@ jobs:
         GOOS=linux GOARCH=amd64 go build -o release_folder/psc-1.0.${{ github.run_number }}-linux-amd64
         GOOS=linux GOARCH=arm64 go build -o release_folder/psc-1.0.${{ github.run_number }}-linux-arm64
 
+    # commented, because it needs a real OpenAI API Key for running the test.
+    # - name: Run Go Tests
+    #   run: go test ./...
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
