@@ -3,6 +3,7 @@
 # Password-Strength-Checker (psc)
 
 Check the password strength via OpenAI
+
 Follow up blog at [Revolutionizing Password Strength Evaluation with OpenAI: A New Open Source Project — PSC](https://towardsdev.com/revolutionizing-password-strength-evaluation-with-openai-a-new-open-source-project-psc-83a63af32bb6)
 
 ## Usage
